@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protect - CyberShield</title>
+<style>
+/* ---------------- Base ---------------- */
+body {
+    margin:0;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background:#0f1622;
+    color:#e0e0e0;
+    position:relative;
+    overflow-x:hidden;
+}
+
+/* Background video */
+#bg-video {
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:-1;
+    opacity:0.25;
+}
+
+/* Overlay for readability */
+body::before {
+    content:'';
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(15,22,34,0.6);
+    z-index:-1;
+}
+
+/* ---------------- Navbar ---------------- */
+header {
+    background:#1b2434;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 20px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.4);
+}
+header .logo img {
+    width:65px;
+    border-radius:50%;
+    border:2px solid #ffffff;
+    background:#ffffff;
+}
+nav ul {
+    list-style:none;
+    display:flex;
+    gap:12px;
+    margin:0;
+    padding:0;
+}
+nav ul li a {
+    color:#e0e0e0;
+    text-decoration:none;
+    font-weight:500;
+    padding:6px 12px;
+    border-radius:6px;
+    transition:.3s;
+}
+nav ul li a:hover, nav ul li a.active {
+    background:#e0e0e0;
+    color:#121926;
+}
+
+/* ---------------- Main ---------------- */
+.container {
+    padding:20px 8%;
+}
+
+h1 {
+    text-align:center;
+    margin:2rem 0 1rem 0;
+    font-size:2.3rem;
+    color:#f0f0f0;
+    letter-spacing:0.5px;
+}
+
+/* ---------------- System Overview ---------------- */
+.system-status {
+    background:#1e2a3a;
+    border-radius:10px;
+    padding:16px 24px;
+    margin-bottom:20px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.3);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+}
+.system-status div {
+    margin:6px 0;
+}
+.system-status strong {
+    color:#4caf50;
+}
+
+/* ---------------- Actions ---------------- */
+.actions {
+    display:flex;
+    flex-wrap:wrap;
+    gap:15px;
+    align-items:center;
+    margin-bottom:25px;
+    justify-content:center;
+}
+.actions label {
+    font-weight:bold;
+    color:#c0c0c0;
+}
+select {
+    padding:8px 12px;
+    border-radius:6px;
+    border:none;
+    background:#1b2434;
+    color:#e0e0e0;
+}
+button.apply, button.load {
+    background:#4caf50;
+    color:#fff;
+    border:none;
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.3s;
+}
+button.apply:hover, button.load:hover {
+    background:#45a049;
+}
+
+/* ---------------- Log Cards ---------------- */
+#logsContainer {
+    min-height:200px;
+}
+
+.empty-state {
+    text-align:center;
+    padding:40px;
+    color:#b0b0b0;
+}
+.empty-state img {
+    width:180px;
+    opacity:0.8;
+}
+.log-card {
+    background:#1e2a3a;
+    border-left:6px solid;
+    padding:16px 20px;
+    margin:12px 0;
+    border-radius:8px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.3);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    transition:transform 0.2s ease, box-shadow 0.2s ease;
+}
+.log-card:hover {
+    transform:translateY(-3px);
+    box-shadow:0 4px 15px rgba(0,0,0,0.5);
+}
+.log-info {
+    flex:1;
+}
+.log-filename {
+    font-weight:bold;
+    margin-bottom:6px;
+    font-size:1.1rem;
+}
+.log-status {
+    font-weight:bold;
+    padding:4px 10px;
+    border-radius:6px;
+    display:inline-block;
+    margin-bottom:4px;
+}
+.normal { border-color:#4caf50; background:#4caf50; color:#fff; }
+.suspicious { border-color:#ffb74d; background:#ffb74d; color:#fff; }
+.tampered { border-color:#e57373; background:#e57373; color:#fff; }
+
+/* ---------------- History ---------------- */
+.history { margin-top:40px; }
+.history h2 {
+    cursor:pointer;
+    user-select:none;
+    background:#1b2434;
+    padding:10px 16px;
+    border-radius:6px;
+    font-size:1.2rem;
+    color:#e0e0e0;
+}
+.history-content {
+    display:none;
+    margin-top:12px;
+    overflow-x:auto;
+}
+.history-table {
+    width:100%;
+    border-collapse:collapse;
+    min-width:600px;
+}
+.history-table th, .history-table td {
+    padding:10px 12px;
+    border-bottom:1px solid rgba(255,255,255,0.1);
+    text-align:left;
+}
+.history-table th {
+    background:#1b2434;
+    color:#fff;
+    font-weight:bold;
+}
+
+/* ---------------- Floating Status ---------------- */
+.live-status {
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#1b2434;
+    padding:12px 18px;
+    border-radius:8px;
+    box-shadow:0 0 12px rgba(0,0,0,0.6);
+    font-weight:bold;
+    color:#fff;
+    backdrop-filter: blur(6px);
+}
+
+/* ---------------- Responsive ---------------- */
+@media(max-width:768px){
+    .actions { flex-direction:column; align-items:flex-start; }
+    .log-card { flex-direction:column; align-items:flex-start; }
+    .system-status { flex-direction:column; align-items:flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- Background video -->
+<video autoplay muted loop id="bg-video">
+  <source src="{{ url_for('static', filename='videos/protect.mp4') }}" type="video/mp4">
+</video>
+
+<header>
+    <div class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"></div>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('connect') }}">Connect</a></li>
+            <li><a href="{{ url_for('protect') }}" class="active">Protect</a></li>
+            <li><a href="{{ url_for('logs.logs_dashboard', system_id='win-system-01') }}">Monitor</a></li>
+            <li><a href="{{ url_for('forensics') }}">Forensics</a></li>
+            <li><a href="{{ url_for('login') }}">Login</a></li>
+            <li><a href="{{ url_for('profile') }}">Profile</a></li>
+        </ul>
+    </nav>
+</header>
+
+<h1>Protect Your Systems</h1>
+
+<div class="container">
+    <!-- System Status Section -->
+    <div class="system-status">
+        <div><strong>Mode:</strong> Active Protection</div>
+        <div><strong>Network Nodes:</strong> 01 Connected</div>
+        <div><strong>AI Status:</strong> Monitoring Logs</div>
+        <div><strong>Last Scan:</strong> <span id="lastScan">–</span></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+        <label for="systemSelect">Select System:</label>
+        <select id="systemSelect">
+            <option value="win-system-01">win-system-01</option>
+        </select>
+        <button class="load" onclick="fetchLogs()">Load Logs</button>
+    </div>
+
+    <!-- Logs Container -->
+    <div id="logsContainer" class="empty-state">
+        <!-- <img src="{{ url_for('static', filename='images/i2.png') }}" alt="No logs" style="border-radius:50%;"> -->
+        <p style="color: #e0e0e0; font-size: 40px;">No logs loaded. Select a system and click <b>Load Logs</b> to begin.</p>
+    </div>
+
+    <!-- Prevention History -->
+    <div class="history">
+        <h2 onclick="toggleHistory()">Prevention History &#9660;</h2>
+        <div class="history-content">
+            <table class="history-table" id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Action Taken</th>
+                        <th>Status</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Live Status -->
+<div class="live-status" id="liveStatus">Select a system and load logs...</div>
+
+<script>
+function toggleHistory() {
+    const content = document.querySelector(".history-content");
+    content.style.display = content.style.display === "block" ? "none" : "block";
+}
+
+async function fetchLogs() {
+    const system_id = document.getElementById("systemSelect").value;
+    const container = document.getElementById("logsContainer");
+    container.innerHTML = "";
+    document.getElementById("liveStatus").innerText = "Fetching logs...";
+    document.getElementById("lastScan").innerText = new Date().toLocaleString();
+
+    try {
+        const res = await fetch(`/api/log-events/${system_id}`);
+        const logs = await res.json();
+
+        if (logs.length === 0) {
+            container.classList.add("empty-state");
+            container.innerHTML = `
+                <img src="{{ url_for('static', filename='images/secure_shield.png') }}" alt="No logs">
+                <p>No logs found for this system.</p>`;
+            return;
+        }
+
+        container.classList.remove("empty-state");
+        logs.forEach(log => {
+            const statusClass = 
+                log.status === "Tampered" || log.status === "Tamper" ? "tampered" :
+                log.status === "Suspicious" ? "suspicious" : "normal";
+
+            const card = document.createElement("div");
+            card.classList.add("log-card");
+            card.innerHTML = `
+                <div class="log-info">
+                    <div class="log-filename">${log.filename}</div>
+                    <div class="log-status ${statusClass}">${log.status}</div>
+                    <div>Timestamp: ${log.timestamp}</div>
+                </div>
+                <div>
+                    ${log.status!=='Normal'?`<button class="apply" onclick="applyAction(${log.id}, '${system_id}')">Apply Action</button>`:""}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        fetchHistory(system_id);
+        document.getElementById("liveStatus").innerText = "Logs loaded successfully.";
+    } catch(err) {
+        console.error(err);
+        document.getElementById("liveStatus").innerText = "Error fetching logs!";
+    }
+}
+
+async function applyAction(log_id, system_id){
+    const action = prompt("Enter action to apply (e.g., Block IP, Force Password Reset):");
+    if(!action) return;
+    try {
+        const res = await fetch("/api/apply-action", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({log_id, system_id, action_name: action})
+        });
+        const data = await res.json();
+        alert(data.message || "Action applied successfully!");
+        fetchLogs();
+    } catch(err) {
+        alert("Error applying action.");
+        console.error(err);
+    }
+}
+
+async function fetchHistory(system_id){
+    const tbody = document.querySelector("#historyTable tbody");
+    tbody.innerHTML = "";
+    try {
+        const res = await fetch(`/api/prevention-history/${system_id}`);
+        const logs = await res.json();
+        logs.forEach(log=>{
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${log.filename}</td>
+                <td>${log.action_taken}</td>
+                <td>${log.status}</td>
+                <td>${log.timestamp}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch(err) {
+        console.error(err);
+    }
+}
+
+// Auto-refresh every 10s
+setInterval(()=>{
+    const systemSelect = document.getElementById("systemSelect");
+    if(systemSelect.value) fetchLogs();
+}, 10000);
+</script>
+</body>
+</html>

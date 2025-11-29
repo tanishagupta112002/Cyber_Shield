@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LogGuard - AI Log Tampering Detection</title>
+<style>
+    /* ===== Global Styles ===== */
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f6fa;
+        color: #222;
+    }
+
+   /* ---------------- Navbar ---------------- */
+header {
+    background:#1b2434;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 20px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.4);
+}
+header .logo img {
+    width:65px;
+    border-radius:50%;
+    border:2px solid #ffffff;
+    background: #ffffff;
+}
+nav ul {
+    list-style:none;
+    display:flex;
+    gap:12px;
+    margin:0;
+    padding:0;
+}
+nav ul li a {
+    color:#e0e0e0;
+    text-decoration:none;
+    font-weight:20px;
+    padding:6px 12px;
+    border-radius:6px;
+    transition:.3s;
+}
+nav ul li a:hover, nav ul li a.active {
+    background:#e0e0e0;
+    color:#121926;
+}
+
+    /* ===== Hero Section ===== */
+    .hero {
+        position: relative;
+        text-align: center;
+        color: #fff;
+        height: 90vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .hero video {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        min-width: 100%;
+        min-height: 100%;
+        object-fit: cover;
+        transform: translate(-50%, -50%);
+        z-index: -1;
+    }
+
+    .hero h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 15px 25px;
+        border-radius: 8px;
+    }
+
+    .hero p {
+        font-size: 1.3rem;
+        margin: 20px 0;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 10px 20px;
+        border-radius: 8px;
+        line-height: 1.5;
+        font-family: Georgia, 'Times New Roman', Times, serif;
+    }
+
+    .hero .btn {
+        color: #0e2743;
+        background-color: #fff;
+        padding: 12px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-top: 40px;
+        transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+    }
+
+    .hero .btn:hover {
+        background-color: #155bb5;
+        transform: translateY(-2px);
+    }
+
+    /* ===== Vision Section ===== */
+    .vision {
+        text-align: center;
+        padding: 60px 20px;
+        background-color: #ffffff;
+        color: #333;
+    }
+
+    .vision span {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0e2743;
+        display: block;
+        margin-bottom: 20px;
+    }
+
+    .vision p {
+        font-size: 1.2rem;
+        line-height: 1.8;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    /* ===== Features Section ===== */
+    .features {
+        text-align: center;
+        padding: 70px 20px;
+        background: #1b2434;
+        color: #ffffff;
+    }
+
+    .features h2 {
+        font-size: 2.5rem;
+        margin-bottom: 60px;
+        font-weight: 700;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+    }
+
+    .feature-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .feature-card {
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        padding: 25px;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .feature-card img {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        margin-bottom: 20px;
+        object-fit: cover;
+    }
+
+    .feature-card h3 {
+        color: #0e2743;
+        font-size: 1.3rem;
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+
+    .feature-card p {
+        font-size: 1rem;
+        color: #555;
+        line-height: 1.5;
+    }
+
+    /* ===== Footer ===== */
+    footer {
+        text-align: center;
+        color: #f1eded;
+        background-color: #0c1929;
+        padding: 30px 20px;
+        font-size: 0.95rem;
+    }
+
+    footer a {
+        color: #64b5f6;
+        text-decoration: none;
+    }
+
+    footer a:hover {
+        text-decoration: underline;
+    }
+
+    hr {
+        border: none;
+        height: 1px;
+        background: #ddd;
+        margin: 0;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo">
+    </div>
+   <nav>
+    <ul>
+        <li><a href="{{ url_for('home') }}">Home</a></li>
+        <li><a href="{{ url_for('connect') }}">Connect</a></li>
+        <li><a href="{{ url_for('protect') }}">Protect</a></li>
+        <li><a href="{{ url_for('logs.logs_dashboard', system_id='win-system-01') }}">Monitor</a></li>
+        <li><a href="{{ url_for('forensics') }}">Forensics</a></li>
+        <li><a href="{{ url_for('login') }}">Login</a></li>
+        <li><a href="{{ url_for('profile') }}">Profile</a></li>
+    </ul>
+</nav>
+</header>
+
+<section class="hero">
+    <video autoplay muted loop playsinline>
+        <source src="{{ url_for('static', filename='videos/home.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <h1>AI-Based Network Security System</h1>
+    <p>
+        Safeguard your digital infrastructure with <b>real-time AI monitoring</b>, 
+        <b>log integrity verification</b>, and <b>automated threat response</b> 
+        that protects your systems 24/7.
+    </p>
+    <a href="{{ url_for('signup') }}" class="btn">Start Detection</a>
+</section>
+
+<section class="vision">
+    <span>Our Mission</span>
+    <p>
+        CyberShield is built to protect critical system logs using Artificial Intelligence.
+        Our mission is to ensure data integrity, detect anomalies, and enable 
+        organizations to respond instantly to emerging threats.
+    </p>
+</section>
+
+<section class="features">
+    <h2>Core Features</h2>
+    <div class="features-grid">
+
+        <a href="{{ url_for('logs.logs_dashboard', system_id='win-system-01') }}" class="feature-card-link">
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='images/i3.jpg') }}" alt="Monitoring & Detection">
+                <h3>Monitoring & Detection</h3>
+                <p>Real-time event tracking, anomaly detection, and risk classification for quick and informed decisions.</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('connect') }}" class="feature-card-link">
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='images/i1.jpg') }}" alt="Connect System">
+                <h3>Connect System</h3>
+                <p>Integrate live systems or upload logs for analysis. Only connected systems can be monitored or protected.</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('protect') }}" class="feature-card-link">
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='images/i2.png') }}" alt="Prevention / Prediction">
+                <h3>Prevention / Prediction</h3>
+                <p>Predict potential intrusions using AI and execute preventive actions like firewall enablement or IP blocking.</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('forensics') }}" class="feature-card-link">
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='images/i4.jpg') }}" alt="Forensic Analysis">
+                <h3>Forensic Analysis</h3>
+                <p>Analyze past incidents, identify tampering patterns, and strengthen system resilience with insights.</p>
+            </div>
+        </a>
+    </div>
+</section>
+
+<hr>
+<footer>
+    <p><i>"Integrity is Security – Keep Your Logs Tamper-Free"</i></p>
+    <p>Contact us: <a href="mailto:CyberShield@gmail.com">CyberShield@gmail.com</a></p>
+    <p>&copy; 2025 CyberShield. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

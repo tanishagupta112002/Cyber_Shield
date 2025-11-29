@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logs Dashboard - CyberShield</title>
+<style>
+    body { margin:0; font-family:Arial,sans-serif; background:#000; color:#fff; overflow-x:hidden; }
+
+    /* Matrix style background */
+    canvas#matrix-bg { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; }
+
+    /* ---------------- Navbar ---------------- */
+header {
+    background:#1b2434;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 20px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.4);
+}
+header .logo img {
+    width:65px;
+    border-radius:50%;
+    border:2px solid #ffffff;
+    background: #ffffff;
+}
+nav ul {
+    list-style:none;
+    display:flex;
+    gap:12px;
+    margin:0;
+    padding:0;
+}
+nav ul li a {
+    color:#e0e0e0;
+    text-decoration:none;
+    font-weight:20px;
+    padding:6px 12px;
+    border-radius:6px;
+    transition:.3s;
+}
+nav ul li a:hover, nav ul li a.active {
+    background:#e0e0e0;
+    color:#121926;
+}
+
+
+    .hero {
+        position:relative;
+        text-align:center;
+        color:#fff;
+        height:25vh;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        overflow:hidden;
+        background:rgba(0,0,0,0.7);
+    }    
+
+    .hero h1 {
+        font-size:2.5rem;
+        font-weight:600;
+        margin-bottom:8px;
+    }
+
+    .hero p {
+        color:#ccc;
+        font-size:1.1rem;
+    }
+
+    .logs-section {
+        padding:40px 20px;
+        max-width:1200px;
+        margin:auto;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        background:#111;
+        border-radius:12px;
+        overflow:hidden;
+    }
+
+    th, td {
+        border: 1px solid #333;
+        padding: 12px;
+        text-align: center;
+        font-size:0.9rem;
+    }
+
+    th {
+        background-color:#1b2434;
+        color: #fff;
+    }
+
+    /* Status styles (clean + professional) */
+    .status-ok { color:#3fd43f; font-weight:bold; }
+    .status-tampered { color:#ff4d4d; font-weight:bold; }
+    .status-suspicious { color:#f0ad4e; font-weight:bold; }
+
+    @keyframes fadeIn {
+        from {opacity:0; transform:translateY(10px);}
+        to {opacity:1; transform:translateY(0);}
+    }
+
+    tr.fade-in { animation: fadeIn 0.8s ease forwards; }
+
+    footer {
+        text-align:center;
+        color:#ccc;
+        background-color:#0c1929;
+        padding:20px;
+        margin-top:40px;
+    }
+
+    footer a {
+        color:#3fd43f;
+        text-decoration:none;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="matrix-bg"></canvas>
+
+<header>
+    <div class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"></div>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('connect') }}">Connect</a></li>
+            <li><a href="{{ url_for('protect') }}">Protect</a></li>
+            <li><a href="{{ url_for('logs.logs_dashboard', system_id=system_id) }}" class="active">Monitor</a></li>
+            <li><a href="{{ url_for('forensics') }}">Forensics</a></li>
+            <li><a href="{{ url_for('login') }}">Login</a></li>
+            <li><a href="{{ url_for('profile') }}">Profile</a></li>
+        </ul>
+    </nav>
+</header>
+
+<section class="hero">
+    <h1>Live Attack Monitoring</h1>
+    <p>Watch the logs roll in real-time. Detect intrusions as they happen.</p>
+</section>
+
+<section class="logs-section">
+    <table>
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Status</th>
+                <th>Level</th>
+                <th>Event ID</th>
+                <th>Time Generated</th>        
+            </tr>
+        </thead>
+        <tbody id="logs-table-body">
+            <tr><td colspan="9">Loading logs...</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<footer>
+    <p><i>"Integrity is Security – Keep Your Logs Tamper-Free"</i></p>
+    <p>Contact us: <a href="mailto:CyberShield@gmail.com">CyberShield@gmail.com</a></p>
+    <p>&copy; 2025 CyberShield. All rights reserved.</p>
+</footer>
+
+<script>
+    const systemId = "{{ system_id }}";
+
+    async function fetchLogs() {
+        try {
+            const response = await fetch(`/api/log-events/${systemId}`);
+            const data = await response.json();
+
+            let tableBody = document.getElementById("logs-table-body");
+            tableBody.innerHTML = "";
+
+            if (data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="9">No logs available</td></tr>`;
+                return;
+            }
+
+            data.forEach(log => {
+                let statusClass = "status-ok";
+                let statusText = "Normal";
+
+                if (log.tamper_reason && log.tamper_reason.trim() !== "") {
+                    statusClass = "status-tampered";
+                    statusText = "Tampered";
+                } 
+                else if (log.level && log.level.toLowerCase() === "warning") {
+                    statusClass = "status-suspicious";
+                    statusText = "Suspicious";
+                }
+
+                let row = document.createElement("tr");
+                row.classList.add("fade-in");
+                row.innerHTML = `
+                    <td>${log.filename}</td>
+                    <td class="${statusClass}">${statusText}</td>
+                    <td>${log.level || ""}</td>
+                    <td>${log.eventid || ""}</td>
+                    <td>${log.time_generated || ""}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } catch (err) {
+            console.error("Error fetching logs:", err);
+        }
+    }
+
+    setInterval(fetchLogs, 3000);
+    fetchLogs();
+
+    // Matrix rain background effect
+    const canvas = document.getElementById("matrix-bg");
+    const ctx = canvas.getContext("2d");
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+
+    const letters = "1010010100101100101001010010010100010100100101001001";
+    const fontSize = 14;
+    const columns = canvas.width / fontSize;
+    const drops = [];
+
+    for (let x = 0; x < columns; x++) drops[x] = 1;
+
+    function draw() {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#3fd43f";
+        ctx.font = fontSize + "px monospace";
+        for (let i = 0; i < drops.length; i++) {
+            const text = letters.charAt(Math.floor(Math.random() * letters.length));
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+    }
+    setInterval(draw, 35);
+</script>
+
+</body>
+</html>
